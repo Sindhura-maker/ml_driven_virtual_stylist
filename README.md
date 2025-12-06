@@ -3,4 +3,4 @@ This project is a *machine-learning based virtual stylist web application* that 
 
 The application applies *rule-based filtering + ML similarity search* to provide smart outfit results. It includes *color palette recommendations, **accessories, **virtual wardrobe support, and **feedback logging* (Like/Dislike) to simulate learning. Users can either upload a face image for automatic skin tone detection or select manually. Measurements are optional, with a backup body shape selection. Finally, results include an *explanation* describing why the outfit is chosen based on occasion, weather, and body features.
 
-The project is built using *Python Flask, **scikit-learn, **pandas, **Pillow, and **HTML/CSS (inline). To run the system, install dependencies, place styles.csv into the data/ folder, and execute python app.py. It runs locally at http://127.0.0.1:5000/. This project demonstrates the integration of **ML + dataset + user interaction* for intelligent outfit recommendations.
+
