@@ -8,7 +8,6 @@ import pandas as pd
 from sklearn.neighbors import NearestNeighbors
 from PIL import Image
 
-# ---------------- BASIC SETUP ----------------
 
 app = Flask(__name__)
 app.secret_key = "some_secret_key"  # needed for flash messages
@@ -18,7 +17,7 @@ DATA_DIR = os.path.join(BASE_DIR, "data")
 STATIC_DIR = os.path.join(BASE_DIR, "static")
 UPLOAD_DIR = os.path.join(STATIC_DIR, "uploads")
 
-# Using Kaggle "Fashion Product Images Dataset" (BIG one) styles.csv
+
 KAGGLE_STYLES_FILE = os.path.join(DATA_DIR, "styles.csv")
 
 WARDROBE_FILE = os.path.join(DATA_DIR, "wardrobe_items.csv")
@@ -90,7 +89,6 @@ GENDER_MAP = {
     "other": 2,
 }
 
-# --------------- INITIALIZE LOG FILES (NOT DATASET) ----------------
 
 def init_wardrobe_file():
     if os.path.exists(WARDROBE_FILE):
@@ -118,7 +116,6 @@ def init_feedback_file():
 init_wardrobe_file()
 init_feedback_file()
 
-# --------------- HELPER FUNCTIONS: ENCODERS ----------------
 
 def encode_skin_tone(name):
     return SKIN_TONE_MAP.get(name, 1)
@@ -172,8 +169,6 @@ def classify_weather_from_temp(temp_c, is_rainy):
         return "hot"
 
 
-# --------------- FEATURE 2: BODY SHAPE DETECTION FROM MEASUREMENTS ----------------
-
 def classify_body_shape_from_measurements(shoulder, bust, waist, hip):
     """
     Very simple rule-based body shape classification.
@@ -197,7 +192,6 @@ def classify_body_shape_from_measurements(shoulder, bust, waist, hip):
     return "rectangle"
 
 
-# --------------- FEATURE 1: FACE SCAN → SKIN TONE DETECTION ----------------
 
 def detect_skin_tone_from_image(image_path):
     """
@@ -230,7 +224,6 @@ def detect_skin_tone_from_image(image_path):
         return "medium"
 
 
-# --------------- KAGGLE → OUR FEATURE MAPPINGS ----------------
 
 def normalize_gender_kaggle(g):
     if not isinstance(g, str):
@@ -272,8 +265,6 @@ def map_usage_to_occasion(usage):
         return "casual"
     return "casual"
 
-
-# --------------- FEATURE 6: STYLE PERSONALITY MAPPING ----------------
 
 def map_article_to_style(article_type, sub_category):
     text = ""
@@ -322,7 +313,6 @@ def infer_body_shape_from_article(article_type, sub_category):
     return "rectangle"
 
 
-# --------------- FEATURE 3: KNN FEATURE VECTOR ----------------
 
 def build_feature_vector(skin_tone, body_shape, weather, occasion,
                          style_personality, comfort_priority, fit,
@@ -341,7 +331,6 @@ def build_feature_vector(skin_tone, body_shape, weather, occasion,
     ]
 
 
-# --------------- FEATURE 9: ACCESSORIES RECOMMENDATION ----------------
 
 def get_accessories_suggestions(body_shape, occasion, style_personality):
     suggestions = []
@@ -376,8 +365,6 @@ def get_accessories_suggestions(body_shape, occasion, style_personality):
     return suggestions
 
 
-# --------------- FEATURE 8: COLOR PALETTE ----------------
-
 def get_color_palette_recommendations(skin_tone):
     if skin_tone == "fair":
         best = ["Soft pastels", "Cool blues", "Rose pink", "Mint"]
@@ -395,7 +382,6 @@ def get_color_palette_recommendations(skin_tone):
     return best, avoid
 
 
-# --------------- FEATURE 10: MAKEUP SUGGESTIONS ----------------
 
 def get_makeup_suggestions(skin_tone, occasion):
     base = []
@@ -424,7 +410,6 @@ def get_makeup_suggestions(skin_tone, occasion):
     }
 
 
-# --------------- FEATURE 11: VIRTUAL WARDROBE ----------------
 
 def load_wardrobe_items():
     items = []
@@ -467,8 +452,6 @@ def pick_wardrobe_combination(wardrobe_items):
     return outfit if outfit else None
 
 
-# --------------- FEATURE 12: FEEDBACK LOGGING ----------------
-
 def append_feedback(outfit_id, like_dislike, user_features_dict):
     with open(FEEDBACK_FILE, "a", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
@@ -488,7 +471,6 @@ def append_feedback(outfit_id, like_dislike, user_features_dict):
         ])
 
 
-# --------------- FEATURE 13: OCCASION-AWARE EXPLANATION ----------------
 
 def build_explanation(user_data, outfit_row, weather_label, color_best):
     explanation = []
@@ -504,7 +486,6 @@ def build_explanation(user_data, outfit_row, weather_label, color_best):
     return " ".join(explanation)
 
 
-# --------------- LOAD & PREPARE OUTFITS FROM KAGGLE (HUGE DATASET) ----------------
 
 def load_outfits_df():
     """
@@ -578,8 +559,6 @@ def load_outfits_df():
     return df
 
 
-# --------------- ROUTES ----------------
-
 @app.route("/", methods=["GET"])
 def index():
     wardrobe_items = load_wardrobe_items()
@@ -605,7 +584,7 @@ def add_wardrobe_item_route():
 
 @app.route("/recommend", methods=["POST"])
 def recommend():
-    # --------- FORM DATA (Features 4,5,6,7) ----------
+
     gender = request.form.get("gender", "male")
     style_personality = request.form.get("style_personality", "minimal")
     comfort_priority = request.form.get("comfort_priority", "comfort_first")
@@ -624,7 +603,6 @@ def recommend():
     is_rainy = (rainy_flag == "yes")
     weather_label = classify_weather_from_temp(temp_c, is_rainy)
 
-    # --------- FEATURE 1: FACE → SKIN TONE ----------
     skin_tone_manual = request.form.get("skin_tone_manual", "medium")
     face_file = request.files.get("face_image")
 
@@ -636,7 +614,7 @@ def recommend():
     else:
         skin_tone = skin_tone_manual
 
-    # --------- FEATURE 2: BODY SHAPE ----------
+  
     shoulder = request.form.get("shoulder", "").strip()
     bust = request.form.get("bust", "").strip()
     waist = request.form.get("waist", "").strip()
@@ -659,8 +637,7 @@ def recommend():
         body_shape = classify_body_shape_from_measurements(shoulder_val, bust_val, waist_val, hip_val)
     else:
         body_shape = body_shape_manual
-
-    # --------- BUILD USER FEATURE VECTOR (for KNN) ----------
+-
     user_vector = build_feature_vector(
         skin_tone=skin_tone,
         body_shape=body_shape,
@@ -685,7 +662,6 @@ def recommend():
         "gender": gender,
     }
 
-    # --------- FEATURE 3: KNN USING HUGE KAGGLE DATA ----------
     df = load_outfits_df()
 
     outfit_vectors = []
@@ -709,8 +685,7 @@ def recommend():
 
     distances, indices = neigh.kneighbors([user_vector])
 
-    # Filter by budget, style personality, occasion, weather (Features 4,5,6)
-    recommended_outfits = []
+  
     for idx in indices[0]:
         row = df.iloc[idx].to_dict()
 
@@ -732,21 +707,19 @@ def recommend():
         for idx in indices[0]:
             recommended_outfits.append(df.iloc[idx].to_dict())
 
-    # --------- FEATURES 8,9,10 ----------
     accessories_suggestions = get_accessories_suggestions(body_shape, occasion, style_personality)
     best_colors, avoid_colors = get_color_palette_recommendations(skin_tone)
     makeup_suggestions = None
     if gender == "female":
         makeup_suggestions = get_makeup_suggestions(skin_tone, occasion)
 
-    # --------- FEATURE 11: VIRTUAL WARDROBE ----------
+ 
     wardrobe_items = load_wardrobe_items()
     use_wardrobe = request.form.get("use_wardrobe", "no") == "yes"
     wardrobe_outfit = None
     if use_wardrobe and wardrobe_items:
         wardrobe_outfit = pick_wardrobe_combination(wardrobe_items)
 
-    # --------- FEATURE 13: EXPLANATION ----------
     explanation = build_explanation(user_data, recommended_outfits[0], weather_label, best_colors)
 
     return render_template(
@@ -797,3 +770,4 @@ def feedback():
 if __name__ == "__main__":
     # install deps: pip install flask scikit-learn pillow pandas
     app.run(debug=True)
+
